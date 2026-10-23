@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <application android:label="销售拨号·受控试点" android:networkSecurityConfig="@xml/enterprise_network_security" android:allowBackup="false"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        <activity android:name="com.mantou.salesdialer.contacts.PilotLauncherActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.mantou.salesdialer.contacts.PhoneIntakeActivity" android:exported="false" android:configChanges="orientation|screenSize" />
+        <activity android:name="com.mantou.salesdialer.contacts.PilotReadinessCheckActivity" android:exported="false" />
+        <activity android:name="com.mantou.salesdialer.contacts.EnterpriseConnectionActivity" android:exported="false" />
+        <activity android:name="com.mantou.salesdialer.contacts.EnterpriseActivity" android:exported="false" />
+        <receiver android:name="com.mantou.salesdialer.contacts.EnterpriseAlarmReceiver" android:exported="false" />
+        <receiver android:name="com.mantou.salesdialer.contacts.EnterpriseResetReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /></intent-filter></receiver>
+        <activity android:name="com.mantou.salesdialer.contacts.PilotActivity" android:exported="false" android:configChanges="orientation|screenSize" />
+        <receiver android:name="com.mantou.salesdialer.contacts.PilotResetReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /></intent-filter></receiver>
+        <receiver android:name="com.mantou.salesdialer.contacts.PilotAlarmReceiver" android:exported="false" />
+    </application>
+</manifest>

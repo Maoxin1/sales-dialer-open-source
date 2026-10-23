@@ -1,0 +1,9 @@
+package com.mantou.salesdialer.contacts;
+import java.util.*;
+/** Read-only projection of a complete scoped draft preview. Search never reads raw numbers. */
+public final class ContactListView {
+ public enum Filter { ALL, CREATE, EXISTING_CURRENT, EXISTING_STALE, NOT_QUALIFIED, REFUSED }
+ public static final class Row {public final String targetId,maskedNumber;public final long revision;public final LocalDraftBatch.Status status;Row(String id,String mask,long rev,LocalDraftBatch.Status s){targetId=id;maskedNumber=mask;revision=rev;status=s;}}
+ public static final class Result {public final int total;public final List<Row> rows;public final String selectedId;Result(int total,List<Row> rows,String selected){this.total=total;this.rows=List.copyOf(rows);selectedId=selected;}}
+ public static Result project(LocalDraftBatch.Preview preview,Map<String,String> labels,Filter filter,String query,String selected){if(preview==null||labels==null||filter==null||query==null||query.length()>64||selected==null)throw new IllegalArgumentException("INVALID_LIST_VIEW");Map<String,String> masks;try{masks=Map.copyOf(labels);}catch(NullPointerException e){throw new IllegalArgumentException("INVALID_LIST_VIEW");}if(masks.size()!=preview.rows.size())throw new IllegalArgumentException("INVALID_LIST_VIEW");String search=PhoneIntakeModel.trim(query).toLowerCase(Locale.ROOT);List<Row> result=new ArrayList<>();String selection="";for(var row:preview.rows){String mask=masks.get(row.targetId);if(mask==null||!mask.matches("[0-9]{3}\\*{4}[0-9]{4}"))throw new IllegalArgumentException("INVALID_LIST_VIEW");if(filter!=Filter.ALL&&!filter.name().equals(row.status.name()))continue;if(!mask.toLowerCase(Locale.ROOT).contains(search))continue;result.add(new Row(row.targetId,mask,row.contactRevision,row.status));if(row.targetId.equals(selected))selection=selected;}return new Result(preview.rows.size(),result,selection);}
+}

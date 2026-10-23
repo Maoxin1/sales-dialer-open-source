@@ -1,0 +1,13 @@
+const $=id=>document.getElementById(id),headers={Authorization:'Bearer '+document.querySelector('meta[name="session-token"]').content,'Content-Type':'application/json'};
+let busy=false,state=null;
+const reasons={RUNTIME_NOT_CONFIGURED:'未配置可信运行会话，当前不可开启。',CONFIG_MISSING:'运行配置缺失，请由开发者准备可信会话。',CONFIG_CHANGED:'配置已变化，调度已停止；请显式重载后再开启。',SCHEDULE_CONFIG_INVALID:'配置无效，不能开启。',ROUTE_UNAVAILABLE:'配置未匹配已有目标、设备和许可。',IN_FLIGHT:'设备检查尚未结束，请保持停止并稍后刷新。',WEB_REAL_START_DISABLED:'真实受控会话尚未开放网页启动。',CONTACT_BLOCKED:'联系资格未满足或已拒绝联系。',BUDGET_EXHAUSTED:'许可次数已用完。',PERMIT_TIME_BLOCKED:'当前不在许可有效期内。',SALES_BUSY:'有待核对记录，不能开始下一次。',PAUSED:'我的计划已暂停，恢复后须重新安排。',FORBIDDEN:'当前身份无权操作。'};
+function buttons(){for(const [id,flag]of [['schedule-start','canStart'],['schedule-stop','canStop'],['schedule-reload','canReload']])$(id).disabled=busy||!state?.[flag];$('schedule-refresh').disabled=busy;}
+async function read(){const res=await fetch('/api/contact-schedule/status',{headers});if(!res.ok)throw Error('无法读取运行状态，请刷新重试。');const s=await res.json();if(s.decision!=='OK')throw Error(reasons[s.reason]??'运行状态不可用。');state=s;
+ $('schedule-source').textContent=s.source==='CONTROLLED_FIXTURE'?'电话替身仿真 · 不拨号':s.source==='EXPLICIT_CONTROLLED_CALL'?'真实受控会话 · 网页启动未开放':'未连接运行会话';
+ $('schedule-state').textContent=({STOPPED:'已停止',RUNNING:'运行中',STOPPING:'正在停止，等待设备检查结束',CLOSED:'已关闭'})[s.state]??'状态未知';
+ $('schedule-counts').textContent='已配置目标 '+s.routeCount+' · 待触发 '+s.schedule.pending+' · 检查中 '+s.schedule.inflight;
+ $('schedule-reason').textContent=reasons[s.reason]??(s.blockers??[]).map(x=>({SALES_PAUSED:'我的计划已暂停。',ATTEMPT_PENDING:'有待核对记录，不能开始新尝试。',WEB_REAL_START_DISABLED:reasons.WEB_REAL_START_DISABLED})[x]??x).join(' ');
+ $('schedule-start').textContent=s.source==='CONTROLLED_FIXTURE'?'启动多目标仿真':'启动调度（未开放）';buttons();window.dispatchEvent(new Event('contact-schedule-updated'));}
+async function act(op){if(busy)return;busy=true;buttons();try{if(op){const res=await fetch('/api/contact-schedule/command',{method:'POST',headers,body:JSON.stringify({op})});if(!res.ok)throw Error('操作未完成，请刷新核对。');const r=await res.json();if(r.decision!=='OK')throw Error(reasons[r.reason]??'操作未完成，请检查运行状态。');$('schedule-message').textContent=({start:'已启动未来计划快照。',stop:'已停止后续触发，已提交的记录仍须核对。',reload:'已重载，仍保持停止；如需执行请再点击启动。'})[op];}await read();}catch(e){$('schedule-message').textContent=e.message;state=null;try{await read();}catch{$('schedule-state').textContent='状态读取失败';}}finally{busy=false;buttons();}}
+for(const [id,op]of [['schedule-start','start'],['schedule-stop','stop'],['schedule-reload','reload'],['schedule-refresh',null]])$(id).onclick=()=>act(op);
+act(null);

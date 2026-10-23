@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {spawnSync} from 'node:child_process';import {fileURLToPath} from 'node:url';
+const project=fileURLToPath(new URL('../../../',import.meta.url));
+test('T794 closure CLI requires explicit valid permit ID before touching data',()=>{for(const args of [[],['--permit-id','all'],['--permit-id','CONTROLLED-'+'a'.repeat(64),'--force']]){const r=spawnSync(process.execPath,['tools/close-enterprise-live-permit.mjs',...args],{cwd:project,encoding:'utf8',windowsHide:true,timeout:10000});assert.equal(r.status,1);assert.equal(JSON.parse(r.stderr).error,'EXPLICIT_PERMIT_ID_REQUIRED');assert.equal(r.stdout,'');}});

@@ -1,0 +1,10 @@
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';import {join} from 'node:path';import assert from 'node:assert/strict';
+const dest=process.env.DIALER_EVIDENCE_DIR;if(!dest)throw Error('EVIDENCE_REQUIRED');mkdirSync(dest,{recursive:true});
+const session=JSON.parse(readFileSync('.local/contact-binding-session.json','utf8'));assert.equal(session.scope,'USER_AUTHORIZED_READ_ONLY_NO_CALLS');
+const html=await(await fetch('http://127.0.0.1:8787/contacts')).text(),token=html.match(/name="session-token" content="([^"]+)"/)[1],headers={Authorization:'Bearer '+token,'Content-Type':'application/json'};
+const status=async()=>await(await fetch('http://127.0.0.1:8787/api/contacts/status',{headers})).json();
+const before=await status();assert.equal(before.timer.running,false);assert.equal(before.counts.recordingAttempts,0);
+const result=await(await fetch('http://127.0.0.1:8787/api/contacts/command',{method:'POST',headers,body:JSON.stringify({op:'preflight',planId:session.planId,expectedVersion:session.version})})).json();
+const after=await status();assert.equal(after.counts.recordingAttempts,0);assert.equal(after.realCallsEnabled,false);assert.equal(result.callAuthorization,'DENY');
+writeFileSync(join(dest,'live-preflight.json'),JSON.stringify({result,counts:after.counts,timerRunning:after.timer.running,actualPhoneCalls:0,scope:'Authorized real target through HTTP to USB read-only preflight; no call E2E'},null,2));
+assert.equal(result.ready,true,JSON.stringify(result.blockers));console.log(JSON.stringify({passed:true,ready:true,callAuthorization:'DENY',actualPhoneCalls:0}));

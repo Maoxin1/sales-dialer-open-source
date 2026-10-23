@@ -1,0 +1,41 @@
+import {readFileSync,writeFileSync,mkdirSync,existsSync} from 'node:fs';
+import {resolve,relative,isAbsolute} from 'node:path';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+import {AdbSyntheticTransport} from '../packages/core/src/adb-synthetic-transport.mjs';
+import {AdbGuardTransport} from '../packages/core/src/adb-guard-transport.mjs';
+import {NativeGuardAdapter} from '../packages/core/src/native-guard-adapter.mjs';
+import {ControlledTrial} from '../packages/core/src/controlled-trial.mjs';
+import {TrialBudget} from '../packages/core/src/trial-budget.mjs';
+import {PhoneCapabilities} from '../packages/core/src/phone-capabilities.mjs';
+import {SimulationEngine} from '../packages/core/src/simulation-engine.mjs';
+import {SQLiteStore} from '../packages/core/src/sqlite-store.mjs';
+const [serial,label,directory]=process.argv.slice(2),root=resolve(import.meta.dirname,'..'),dest=resolve(root,directory??''),rel=relative(resolve(root,'evidence'),dest);
+if(!serial||!label||!rel||rel.startsWith('..')||isAbsolute(rel)||existsSync(dest))throw Error('Usage: check-guard-link.mjs SERIAL EXACT_LABEL evidence/new-directory');
+mkdirSync(dest,{recursive:true});const commands=[],checks=[],report={startedAt:new Date().toISOString(),command:process.argv,node:process.version,commands,checks,realCallsIssued:0};let store;
+try{
+ const apkHash=createHash('sha256').update(readFileSync(resolve(root,'prototypes/android/app/build/outputs/apk/debug/app-debug.apk'))).digest('hex');report.apkSha256=apkHash;
+ const usb=new AdbSyntheticTransport({adbPath:resolve(root,'.tooling/android-sdk/platform-tools/adb.exe'),serial,record:r=>commands.push(r)});
+ const phone=new PhoneCapabilities({read:()=>usb.readPhoneCapabilities(apkHash)});await phone.refresh();const snapshot=phone.status().snapshot;
+ assert.equal(snapshot?.inCall,false,'phone must be idle; no call is ended by this test');
+ const matches=snapshot.accounts.filter(a=>a.label===label&&a.enabled);assert.equal(matches.length,1);phone.select(matches[0].key);
+ assert.equal(phone.status().prerequisites,'OBSERVED_READY');checks.push('phone ready and explicit account');
+ const mapping={deviceKey:snapshot.deviceKey,accountKey:matches[0].key,deviceId:'SYNTHETIC-GUARD-DEVICE',accountId:'SYNTHETIC-GUARD-SIM'};
+ const deviceKey=await AdbGuardTransport.identity(usb,apkHash,mapping.deviceKey);
+ const transport=new AdbGuardTransport({transport:usb,expectedApkHash:apkHash,hostDeviceKey:mapping.deviceKey,deviceKey});
+ const guard=new NativeGuardAdapter({hostDeviceKey:mapping.deviceKey,deviceKey,accountKey:mapping.accountKey,transport});
+ store=new SQLiteStore(resolve(dest,'trial.db'));const clock={nowMs:Date.now},engine=new SimulationEngine({store,clock});
+ const actorId='SYNTHETIC-GUARD-SALES',tenantId='SYNTHETIC-GUARD-TENANT',targetKey='SYNTHETIC-GUARD-TARGET',taskId='SYNTHETIC-GUARD-TASK',roundId='SYNTHETIC-GUARD-ROUND';
+ engine.configureFixture({actors:[{actorId,tenantId,permissions:['read','import','assign','trigger','qualify','pause','reconcile','observe']}],policy:{simulationOnly:true,version:1,calendar:'weekdays',lateToleranceMs:60000,pauseScope:'seller',order:'explicit-selection'}});
+ engine.importContacts({actorId,rows:[{raw:targetKey,qualification:'CONFIRMED',source:'SYNTHETIC-FIXTURE'}]});
+ assert.equal(engine.createTask({actorId,taskId,targetKey,assignedSalesId:actorId,plannedAt:Date.now()}).decision,'OK');engine.observeDevice({actorId,state:'IDLE'});
+ const budget=new TrialBudget({store});budget.register({roundId,tenantId,salesId:actorId,deviceId:mapping.deviceId,accountId:mapping.accountId,targets:[targetKey],notBefore:Date.now(),expiresAt:Date.now()+60000,maxAttempts:1,source:'SIMULATION_FIXTURE'});
+ const config={store,clock,phone,mapping,guard},service=new ControlledTrial(config),req={actorId,taskId,roundId,planVersion:1,policyVersion:1,intentId:'SYNTHETIC-GUARD-INTENT',trigger:'manual_now'};
+ report.result=await service.submit(req);assert.equal(report.result.status,'RECONCILE_REQUIRED');const a=store.read().attempts[report.result.attemptId];report.attempt=a;
+ assert.equal(a.nativeGuardReceipt?.status,'DRY_RUN_READY');assert.equal(a.nativeGuardReceipt.actualPhoneApiCalls,0);assert.equal(a.apiSubmission,'UNKNOWN');assert.equal(a.nativeGuardCommand.link.trialTicketId,a.trialTicketId);checks.push('native READY linked to durable attempt and held ticket, not API submission');
+ assert.equal(budget.status().rounds[0].used,1);assert.equal((await service.submit(req)).decision,'DENY');assert.equal(guard.requests.length,1);checks.push('repeated submit no second handoff');
+ store.close();store=new SQLiteStore(resolve(dest,'trial.db'));const recovered=new ControlledTrial({...config,store});recovered.recover();assert.equal((await recovered.submit(req)).decision,'DENY');assert.equal(guard.requests.length,1);checks.push('SQLite reopen no replay');
+ assert.equal(recovered.reconcile({actorId,attemptId:a.attemptId,noActiveCall:true,result:'UNKNOWN'}).decision,'OK');assert.equal(store.read().trialBudget.rounds[0].used,1);checks.push('explicit synthetic reconciliation never refunds');
+ report.finalState=store.read();report.passed=true;report.exitCode=0;
+}catch(e){report.passed=false;report.error=e.message;report.exitCode=1;process.exitCode=1;}
+finally{store?.close();report.finishedAt=new Date().toISOString();writeFileSync(resolve(dest,'result.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({passed:report.passed,error:report.error,checks:checks.length,realCallsIssued:0,evidence:dest}));}

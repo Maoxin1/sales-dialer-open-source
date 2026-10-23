@@ -1,0 +1,39 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.mantou.salesdialer.pilot'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.mantou.salesdialer.pilot'
+        minSdk 31
+        targetSdk 36
+        versionCode 13
+        versionName '0.13-import-feedback'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+def pilotSharedDir = layout.buildDirectory.dir('generated/shared-core')
+tasks.register('preparePilotShared', Sync) {
+    from('../standalone/src/main/java') {
+        ['PhoneIntakeModel','PhoneIntakeStore','PhoneIntakeActivity','LocalDraftBinding','LocalDraftBatch','AttemptMetrics','ContactListView',
+         'ContactTaskModel','SalesPlanModel','PilotPermit','WorkspaceTimerModel',
+         'SyntheticWorkspaceModel','SyntheticAttemptModel'].each {
+            include "com/mantou/salesdialer/contacts/${it}.java"
+        }
+    }
+    from('../app/src/main/java') { include 'com/mantou/salesdialer/spike/ControlledCallExecutor.java' }
+    into(pilotSharedDir)
+}
+android.sourceSets.main.java.srcDir(pilotSharedDir)
+tasks.named('preBuild').configure { dependsOn('preparePilotShared') }
+
+// Only our versioned assets may access the native bridge. Server responses are data.
+def enterpriseAssetsDir = layout.buildDirectory.dir('generated/enterprise-assets')
+tasks.register('prepareEnterpriseAssets', Sync) {
+    from('../../../packages/enterprise/web')
+    into(enterpriseAssetsDir.map { it.dir('enterprise') })
+}
+android.sourceSets.main.assets.srcDir(enterpriseAssetsDir)
+tasks.named('preBuild').configure { dependsOn('prepareEnterpriseAssets') }

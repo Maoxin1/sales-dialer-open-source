@@ -1,0 +1,8 @@
+{
+  "name": "sales-dialer-spike-static-checks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "check": "node check.mjs" },
+  "devDependencies": { "java-parser": "3.0.1", "xcode": "3.0.1" }
+}

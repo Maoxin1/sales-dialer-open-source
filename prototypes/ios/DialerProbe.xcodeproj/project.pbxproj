@@ -1,0 +1,262 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+		A00000000000000000000064 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "DialerProbeApp.swift";
+			sourceTree = "<group>";
+		};
+		A000000000000000000000C8 = {
+			isa = PBXBuildFile;
+			fileRef = A00000000000000000000064;
+		};
+		A00000000000000000000065 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "ProbeModel.swift";
+			sourceTree = "<group>";
+		};
+		A000000000000000000000C9 = {
+			isa = PBXBuildFile;
+			fileRef = A00000000000000000000065;
+		};
+		A00000000000000000000066 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "ContentView.swift";
+			sourceTree = "<group>";
+		};
+		A000000000000000000000CA = {
+			isa = PBXBuildFile;
+			fileRef = A00000000000000000000066;
+		};
+		A0000000000000000000006E = {
+			isa = PBXFileReference;
+			lastKnownFileType = "text.plist.xml";
+			path = "Info.plist";
+			sourceTree = "<group>";
+		};
+		A00000000000000000000078 = {
+			isa = PBXFileReference;
+			explicitFileType = "wrapper.application";
+			includeInIndex = 0;
+			path = "DialerProbe.app";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A00000000000000000000082 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "wrapper.framework";
+			name = "UIKit.framework";
+			path = "System/Library/Frameworks/UIKit.framework";
+			sourceTree = SDKROOT;
+		};
+		A000000000000000000000E6 = {
+			isa = PBXBuildFile;
+			fileRef = A00000000000000000000082;
+		};
+		A00000000000000000000083 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "wrapper.framework";
+			name = "CallKit.framework";
+			path = "System/Library/Frameworks/CallKit.framework";
+			sourceTree = SDKROOT;
+		};
+		A000000000000000000000E7 = {
+			isa = PBXBuildFile;
+			fileRef = A00000000000000000000083;
+		};
+		A0000000000000000000012C = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000064,
+				A00000000000000000000065,
+				A00000000000000000000066,
+				A0000000000000000000006E,
+			);
+			path = DialerProbe;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000012D = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000078,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000012E = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000082,
+				A00000000000000000000083,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000012F = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000012C,
+				A0000000000000000000012D,
+				A0000000000000000000012E,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000190 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A000000000000000000000C8,
+				A000000000000000000000C9,
+				A000000000000000000000CA,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000191 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A000000000000000000000E6,
+				A000000000000000000000E7,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000192 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A000000000000000000001F4 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = iphoneos;
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				CLANG_ENABLE_MODULES = YES;
+				SWIFT_VERSION = "5.0";
+			};
+			name = Debug;
+		};
+		A000000000000000000001FE = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mantou.salesdialer.spike.ios";
+				INFOPLIST_FILE = "DialerProbe/Info.plist";
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				SWIFT_VERSION = "5.0";
+				TARGETED_DEVICE_FAMILY = 1;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+			};
+			name = Debug;
+		};
+		A000000000000000000001F5 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = iphoneos;
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				CLANG_ENABLE_MODULES = YES;
+				SWIFT_VERSION = "5.0";
+			};
+			name = Release;
+		};
+		A000000000000000000001FF = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mantou.salesdialer.spike.ios";
+				INFOPLIST_FILE = "DialerProbe/Info.plist";
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				SWIFT_VERSION = "5.0";
+				TARGETED_DEVICE_FAMILY = 1;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+			};
+			name = Release;
+		};
+		A00000000000000000000208 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A000000000000000000001F4,
+				A000000000000000000001F5,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000209 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A000000000000000000001FE,
+				A000000000000000000001FF,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000258 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000209;
+			buildPhases = (
+				A00000000000000000000190,
+				A00000000000000000000191,
+				A00000000000000000000192,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DialerProbe;
+			productName = DialerProbe;
+			productReference = A00000000000000000000078;
+			productType = "com.apple.product-type.application";
+		};
+		A000000000000000000002BC = {
+			isa = PBXProject;
+			attributes = {
+				TargetAttributes = {
+					A00000000000000000000258 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = A00000000000000000000208;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A0000000000000000000012F;
+			productRefGroup = A0000000000000000000012D;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000000000000000000258,
+			);
+		};
+	};
+	rootObject = A000000000000000000002BC;
+}

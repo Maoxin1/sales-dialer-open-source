@@ -1,0 +1,24 @@
+/** For a later freshly authorized live validation only. Never starts a phone alarm. */
+import {readFileSync,writeFileSync} from 'node:fs';
+import {resolve,join,sep} from 'node:path';import {fileURLToPath} from 'node:url';import {createHash} from 'node:crypto';import {execFileSync} from 'node:child_process';
+import {permitSecret} from '../packages/enterprise/src/live-permit.mjs';import {prepareLiveValidation,validateLiveRequest} from '../packages/enterprise/src/live-validation-preparation.mjs';
+import {createPermitPrivateStore} from '../packages/enterprise/src/permit-private-store.mjs';
+const root=resolve(fileURLToPath(new URL('../',import.meta.url)));
+async function main(){
+ const args=process.argv.slice(2);if(args.length!==3||args[0]!=='--request-file'||args[2]!=='--ack-current-bounded-authorization')throw Error('CURRENT_EXPLICIT_AUTHORIZATION_REQUIRED');
+ const input=resolve(args[1]);if(!input.startsWith(resolve(root,'.local')+sep))throw Error('REQUEST_FILE_MUST_BE_PROJECT_PRIVATE');const request=JSON.parse(readFileSync(input,'utf8'));validateLiveRequest(request,Date.now());
+ const folder=join(root,'.local/enterprise'),creds=JSON.parse(readFileSync(join(folder,'bootstrap-private.json'),'utf8')).LIVE,binding=JSON.parse(readFileSync(join(root,'.local/contact-android.json'),'utf8')),pkg='com.mantou.salesdialer.pilot';
+ const adb=resolve(root,'.tooling/android-sdk/platform-tools/adb.exe');const run=a=>execFileSync(adb,['-s',binding.serial,...a],{encoding:'utf8',windowsHide:true,stdio:['ignore','pipe','pipe'],timeout:15000}).trim();let token;const staging=join(folder,'live-stage-private.json');
+ async function requestApi(path,body){const response=await fetch('http://127.0.0.1:8790'+path,{method:'POST',redirect:'error',signal:AbortSignal.timeout(5000),headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:JSON.stringify(body)});const j=await response.json();if(!j.ok)throw Error(j.error||'ENTERPRISE_REQUEST_FAILED');return j.data;}
+ const api=async(op,data={})=>{if(!token)token=(await requestApi('/api/login',{tenantId:creds.tenantId,username:creds.sales.username,password:creds.sales.password})).token;return requestApi('/api/command',{op,...data});};
+ const readPhoneFile=name=>JSON.parse(run(['shell','run-as',pkg,'cat','files/'+name]));
+ const device={
+  inspect:async()=>{const user=Number(run(['shell','am','get-current-user'])),prefs=run(['shell','run-as',pkg,'cat','shared_prefs/enterprise-device.xml']),deviceId=prefs.match(/<string name="id">([^<]+)<\/string>/)?.[1];const sim=run(['shell','run-as',pkg,'cat','shared_prefs/pilot-binding.xml']);if(sim.match(/<string name="account">([^<]+)<\/string>/)?.[1]!==binding.accountKey)throw Error('SELECTED_SIM_BINDING_MISMATCH');const path=run(['shell','pm','path','--user','0',pkg]).replace(/^package:/,'');const installed=run(['shell','sha256sum',path]).split(/\s+/)[0],expected=createHash('sha256').update(readFileSync(join(root,'prototypes/android/pilot/build/outputs/apk/debug/pilot-debug.apk'))).digest('hex');return {user,deviceId,accountKey:binding.accountKey,apkMatches:installed===expected,protectedSessionPresent:run(['shell','run-as',pkg,'ls','files']).split(/\s+/).includes('enterprise-session.enc')};},
+  stage:async p=>{store.trackStaging();writeFileSync(staging,JSON.stringify(p)+'\n',{mode:0o600});const remote='/data/local/tmp/sales-enterprise-live-permit.json';try{run(['push',staging,remote]);run(['shell','run-as',pkg,'cp',remote,'files/enterprise-live-permit.pending.json']);if(JSON.stringify(readPhoneFile('enterprise-live-permit.pending.json'))!==JSON.stringify(p))throw Error('DEVICE_STAGE_MISMATCH');}finally{run(['shell','rm','-f',remote]);}},
+  activate:async p=>{run(['shell','run-as',pkg,'mv','files/enterprise-live-permit.pending.json','files/enterprise-live-permit.json']);if(JSON.stringify(readPhoneFile('enterprise-live-permit.json'))!==JSON.stringify(p))throw Error('DEVICE_ACTIVATION_MISMATCH');},
+  clear:async id=>{const names=run(['shell','run-as',pkg,'ls','files']).split(/\s+/);for(const name of ['enterprise-live-permit.pending.json','enterprise-live-permit.json'])if(names.includes(name)){if(readPhoneFile(name).id!==id)throw Error('DEVICE_PERMIT_OWNER_CHANGED');run(['shell','run-as',pkg,'rm','-f','files/'+name]);}}
+ };
+ const store=createPermitPrivateStore(folder);
+ const rootKey=readFileSync(join(folder,'server-key.bin')),key=permitSecret(rootKey);rootKey.fill(0);try{console.log(JSON.stringify(await prepareLiveValidation({request,api,device,store,key})));}finally{key.fill(0);}
+}
+main().catch(e=>{const code=/^[A-Z_]{1,100}$/.test(e.message??'')?e.message:'LIVE_PREPARATION_FAILED';console.error(JSON.stringify({decision:'NOT_PREPARED',error:code,...(e.cleanupRequired?{cleanupRequired:e.cleanupRequired}:{}),actualPhoneCalls:0}));process.exitCode=1;});

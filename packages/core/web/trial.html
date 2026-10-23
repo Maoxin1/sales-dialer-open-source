@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="session-token" content="__TOKEN__"><title>受控演练 · 销售拨号助手</title><link rel="stylesheet" href="/style.css"></head>
+<body><header><strong>销售拨号助手 · 受控演练</strong><a href="/">返回工作台</a></header><main>
+<section class="intro"><div><p class="eyebrow">独立模拟区</p><h1>提交一次，核对每个结果。</h1><p>练习选卡、条件检查与结果核对，不连接手机。</p></div><span class="badge">真实拨号已禁用</span></section>
+<p class="notice">这是固定场景：模拟时间停在北京时间 2026-10-14 09:00，轮次截止 09:01。只有一个合成目标和一次模拟额度，提交后故意模拟回执丢失。刷新或重启不会补额度。</p>
+<div id="trial-message" role="status" aria-live="polite">正在读取演练记录</div>
+<section class="card"><h2>本轮额度</h2><p id="trial-quota">正在加载</p><p>目标：SYNTHETIC-TARGET-1（合成标识）</p><p id="trial-account">尚未选择演练卡</p><div class="actions"><button id="trial-select">选择演练卡（模拟）</button><button id="trial-submit">提交合成任务</button><button id="trial-refresh" class="secondary">刷新记录</button></div></section>
+<section class="card"><h2>结果与核对</h2><p id="trial-state">尚未提交</p><p class="hint">结果未知时先核对，不自动重试。关闭占用不会返还已使用的次数。</p><label class="checkbox"><input type="checkbox" id="trial-confirm">我已核对，此演练没有活动通话</label><button id="trial-reconcile">确认并关闭占用</button></section>
+<p class="hint">本页额度、任务与主工作台及USB手机区分别保存。模拟结果不代表真实设备状态。</p></main><script type="module" src="/trial.mjs"></script></body></html>

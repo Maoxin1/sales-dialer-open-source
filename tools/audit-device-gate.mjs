@@ -1,0 +1,3 @@
+import {resolve} from 'node:path';import {existsSync} from 'node:fs';import {auditDeviceGate} from '../packages/core/src/device-gate-audit.mjs';
+if(process.argv.slice(2).join()!=='--read-only'){console.log(JSON.stringify({decision:'DENY',reason:'READ_ONLY_FLAG_REQUIRED',canRecover:false,realCallsEnabled:false}));process.exitCode=1;}
+else{const directory=resolve('.local'),archive=resolve(directory,'contact-controlled-native-final.db');const result=auditDeviceGate({directory,nativeSnapshotPath:existsSync(archive)?archive:null});console.log(JSON.stringify(result,null,2));if(result.decision!=='AUDITED')process.exitCode=1;}

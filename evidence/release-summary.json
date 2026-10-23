@@ -1,0 +1,121 @@
+{
+  "date": "2026-10-22",
+  "version": "0.12-excel-import/code12",
+  "apkSha256": "3a96e32be510162057260fcb023e0d6714db2009814908918b81a61b6c09e45d",
+  "decision": "PASS_XLSX_IMPORT_AND_RECORDING_DEVICE; REAL_WIFI_CALL_AND_HUMAN_USABILITY_PENDING",
+  "requirements": [
+    "R-CALL-113",
+    "R-CALL-114"
+  ],
+  "tests": {
+    "enterprise": 85,
+    "guidedBrowser": 37,
+    "legacyBrowser": 23,
+    "recordingDevice": 55
+  },
+  "excel": {
+    "firstWorksheet": true,
+    "columns": [
+      "电话",
+      "公司",
+      "姓氏"
+    ],
+    "maximumRowsPerBatch": 200,
+    "maximumFileBytes": 1048576,
+    "maximumExpandedBytes": 8388608,
+    "localParsing": true,
+    "thirdPartyUpload": false,
+    "formulaCacheNotUsed": true,
+    "dependency": "read-excel-file@9.3.12",
+    "nativeSystemPickerVerified": true
+  },
+  "device": {
+    "installed": true,
+    "modeTested": "REHEARSAL",
+    "fileFormat": "XLSX",
+    "generatedContacts": 3,
+    "recordingRequests": 2,
+    "minimumSubmissionIntervalMs": 30249
+  },
+  "database": {
+    "schema": 4,
+    "originalBusinessTablesPreserved": 13,
+    "liveMetrics": {
+      "attempts": 28,
+      "apiAccepted": 28,
+      "pending": 0,
+      "completed": 7,
+      "noAnswer": 21
+    }
+  },
+  "endState": {
+    "liveSalesLoggedIn": true,
+    "alarm": "DISABLED",
+    "permits": false,
+    "pending": 0,
+    "usbBusinessReverse": false
+  },
+  "actualPhoneCallsThisChange": 0,
+  "pending": [
+    "Independent usability T856",
+    "Fresh authorized real Wi-Fi call T845",
+    "Full-day use, additional models and actual fees",
+    "All invalid workbook/provider combinations not device-tested"
+  ],
+  "checks": [
+    {
+      "evidence": "evidence/excel-r114/parser-regression",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/regression",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/browser-final",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/legacy-browser",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/template-and-bounds",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/build",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/package",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/install",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/device-final",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/final-restored",
+      "exitCode": 0
+    },
+    {
+      "evidence": "evidence/excel-r114/live-ready",
+      "exitCode": 0
+    }
+  ],
+  "importFeedback": {
+    "version": "0.13-import-feedback/code13",
+    "enterpriseTests": 87,
+    "guidedBrowserChecks": 39,
+    "build": "PASS",
+    "package": "PASS",
+    "device": "NOT_INSTALLED_NOT_RUN",
+    "actualPhoneCalls": 0,
+    "evidence": "evidence/import-feedback-r115"
+  }
+}

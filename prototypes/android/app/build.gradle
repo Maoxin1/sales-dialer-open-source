@@ -1,0 +1,17 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.mantou.salesdialer.spike'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.mantou.salesdialer.spike'
+        minSdk 31
+        targetSdk 36
+        versionCode 1
+        versionName '0.1-spike'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

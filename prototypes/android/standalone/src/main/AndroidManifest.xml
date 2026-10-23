@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <application android:label="销售任务仿真" android:allowBackup="false"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        <receiver android:name=".TaskAlarmReceiver" android:exported="false" />
+        <receiver android:name="com.mantou.salesdialer.contacts.WorkspaceAlarmReceiver" android:exported="false" />
+        <!-- Diagnostic only: ignores extras, never enables or submits a real call. -->
+        <activity android:name=".SubmissionBoundaryActivity" android:exported="true" />
+        <!-- Fixed synthetic contact-model diagnostic; accepts no caller data. -->
+        <activity android:name=".ContactModelCheckActivity" android:exported="true" />
+        <activity android:name="com.mantou.salesdialer.contacts.ContactStoreCheckActivity" android:exported="true" />
+        <activity android:name="com.mantou.salesdialer.contacts.SyntheticLoopCheckActivity" android:exported="true" />
+        <activity android:name="com.mantou.salesdialer.contacts.SyntheticWorkspaceActivity" android:exported="false" android:configChanges="orientation|screenSize" />
+        <activity android:name="com.mantou.salesdialer.contacts.SyntheticWorkspaceCheckActivity" android:exported="true" />
+        <activity android:name="com.mantou.salesdialer.contacts.WorkspaceTimerCheckActivity" android:exported="true" />
+        <activity android:name="com.mantou.salesdialer.contacts.PhoneIntakeActivity" android:exported="false" android:configChanges="orientation|screenSize" />
+        <activity android:name="com.mantou.salesdialer.contacts.PhoneIntakeCheckActivity" android:exported="true" />
+        <!-- Debug-only fixed-workspace migration integrity check, no caller path/identity input. -->
+        <activity android:name="com.mantou.salesdialer.contacts.PhoneIntakeUpgradeActivity" android:exported="true" />
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

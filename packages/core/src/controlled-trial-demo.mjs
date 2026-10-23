@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import { fixture,NOW,TENANT,SALES,TARGET } from '../test-support/simulation-fixture.mjs';
+import { TrialBudget } from './trial-budget.mjs';
+import { PhoneCapabilities } from './phone-capabilities.mjs';
+import { ControlledTrial } from './controlled-trial.mjs';
+const f=fixture(),mapping={deviceKey:'a'.repeat(64),accountKey:'b'.repeat(64),deviceId:'SYNTHETIC-DEVICE',accountId:'SYNTHETIC-SIM'};
+const budget=new TrialBudget({store:f.store,now:()=>f.clock.nowMs()});
+budget.register({roundId:'SYNTHETIC-DEMO',tenantId:TENANT,salesId:SALES,deviceId:mapping.deviceId,accountId:mapping.accountId,targets:[TARGET],notBefore:NOW,expiresAt:NOW+60000,maxAttempts:1,source:'SIMULATION_FIXTURE'});
+const phone=new PhoneCapabilities({now:()=>f.clock.nowMs(),read:async()=>({schemaVersion:1,source:'ANDROID_READ_ONLY',deviceKey:mapping.deviceKey,observedAt:NOW,deviceObservedAt:NOW,permissions:{callPhone:true,readPhoneState:true,readPhoneNumbers:true},accountsStatus:'KNOWN',accounts:[{key:mapping.accountKey,label:'Synthetic SIM',enabled:true}],inCall:false,exactAlarm:true,backgroundRestricted:false,ignoringBatteryOptimizations:true,realCallsEnabled:false})});
+await phone.refresh();phone.select(mapping.accountKey);
+const service=new ControlledTrial({store:f.store,clock:f.clock,phone,mapping,outcomes:['UNKNOWN']});
+const req={...f.request(),roundId:'SYNTHETIC-DEMO'};
+const first=await service.submit(req);assert.equal(first.status,'RECONCILE_REQUIRED');
+assert.equal((await service.submit(req)).decision,'DENY');assert.equal(service.requests.length,1);
+assert.equal(service.reconcile({actorId:SALES,attemptId:first.attemptId,noActiveCall:true,result:'UNKNOWN'}).decision,'OK');
+assert.equal(budget.status().rounds[0].used,1);assert.equal(budget.status().tickets[0].state,'RECONCILED');
+console.log(JSON.stringify({mode:'SIMULATION_ONLY',checks:['joint-preflight','unknown-held','no-replay','joint-reconciliation','no-refund'],fakeRequests:service.requests.length,actualPhoneApiCalls:0,callAuthorization:'DENY',first,budget:budget.status()},null,2));

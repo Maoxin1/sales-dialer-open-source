@@ -1,0 +1,32 @@
+# 用户提供的完整测试号码仅保存在本地建档文件。
+/docs/test-contact.local.json
+/.tooling/
+/tools/static-check/node_modules/
+/prototypes/android/.gradle/
+/prototypes/android/local.properties
+/prototypes/android/**/build/
+/prototypes/ios/build/
+**/xcuserdata/
+/.local/
+
+# Raw device/build evidence stays local; publish only the curated masked summary.
+/evidence/*
+!/evidence/README.md
+!/evidence/release-summary.json
+**/node_modules/
+
+# Private runtime data, credentials, signing material and local configuration.
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pem
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.apk
+*.aab
+*.log
